@@ -9,17 +9,8 @@ jobs:
             - name: Checkout Repository
               uses: actions/checkout@v5
             
-            - name: Install Cowsay
-              run: sudo apt-get install -y cowsay
-            
-            - name: Generate ASCII Artwork
-              run: cowsay -f dragon "RAWR from Dragon! Welcome to GitHub Actions!" >> ascii_art_dragon.txt
-
-            - name: Test if file is created
-              run: grep -i "dragon" ascii_art_dragon.txt
-
-            - name: Read file
-              run: cat ascii_art_dragon.txt
-
             - name: List files in workspace
               run: ls -ltra
+              
+            - name: Execute ASCII Generation Script
+              run: ./ascii-artwork.sh
