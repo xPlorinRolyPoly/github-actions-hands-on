@@ -1,4 +1,4 @@
-name: Explore Job Concurrency
+name: Explore Timeouts
 
 on: workflow_dispatch
 
