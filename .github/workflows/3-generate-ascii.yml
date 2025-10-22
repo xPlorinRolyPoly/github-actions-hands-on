@@ -13,13 +13,13 @@ jobs:
               run: sudo apt-get install -y cowsay
             
             - name: Generate ASCII Artwork
-              run: cowsay -f cat "Meow! Welcome to GitHub Actions!" >> ascii_art_cat.txt
-            
+              run: cowsay -f dragon "RAWR! Welcome to GitHub Actions!" >> ascii_art_dragon.txt
+
             - name: Test if file is created
-              run: grep -i "cat" ascii_art_cat.txt
-            
+              run: grep -i "dragon" ascii_art_dragon.txt
+
             - name: Read file
-              run: cat ascii_art_cat.txt
-            
+              run: cat ascii_art_dragon.txt
+
             - name: List files in workspace
               run: ls -ltra
