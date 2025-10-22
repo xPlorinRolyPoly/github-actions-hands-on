@@ -9,9 +9,19 @@ on:
 jobs:
     deploy:
         strategy:
+            # fail-fast will stop all in-progress jobs if one fails
+            fail-fast: false
+            # max-parallel will limit the number of jobs that can run simultaneously
+            max-parallel: 2
             matrix:
                 os: [ubuntu-latest, ubuntu-22.04, windows-latest]
                 images: [hello-world, alpine]
+                exclude:
+                    - os: windows-latest
+                      images: alpine
+                include:
+                    - os: ubuntu-22.04
+                      images: amd64/alpine
         runs-on: ${{ matrix.os }}
         steps:
             - name: Print Docker Details
