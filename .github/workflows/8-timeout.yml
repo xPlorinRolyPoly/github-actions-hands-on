@@ -31,4 +31,6 @@ jobs:
             - name: Docker Run
               # Timeout after 1 minute for this step
               timeout-minutes: 1
-              run: echo "docker run -d -p 8080:80 $CONTAINER_REGISTRY/${{ vars.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
+              run: |
+                echo "docker run -d -p 8080:80 $CONTAINER_REGISTRY/${{ vars.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
+                sleep 6000s
