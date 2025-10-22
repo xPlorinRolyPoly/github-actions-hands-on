@@ -6,14 +6,10 @@ env:
     CONTAINER_REGISTRY: docker.io
     IMAGE_NAME: github-actions-nginx
 
-## For example, you can use the concurrency keyword immediately after where trigger conditions are defined to limit the concurrency of entire workflow runs for a specific branch:
-  
-# concurrency:
-#   group: explore-job-concurrency-${{ github.ref }}
-#   cancel-in-progress: true
-
 jobs:
     docker:
+        # Timeout after 10 minutes for this job
+        # timeout-minutes: 10
         runs-on: ubuntu-latest
         steps:
             - name: Docker Build
@@ -29,12 +25,10 @@ jobs:
         needs: docker
         concurrency:
             group: deploy-job
-            # latest job will be prioritized, cancel any previous in-progress jobs
-            # cancel-in-progress: true
-
-            # latest job will wait for any previous in-progress jobs to complete
-            cancel-in-progress: false
+            cancel-in-progress: true
         runs-on: ubuntu-latest
         steps:
             - name: Docker Run
+              # Timeout after 1 minute for this step
+              timeout-minutes: 1
               run: echo "docker run -d -p 8080:80 $CONTAINER_REGISTRY/${{ vars.DOCKER_HUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
