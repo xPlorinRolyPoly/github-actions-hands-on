@@ -1,0 +1,25 @@
+name: Generate ASCII Artwork
+
+on: push
+
+jobs:
+    ascii-job:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v5
+            
+            - name: Install Cowsay
+              run: sudo apt-get install -y cowsay
+            
+            - name: Generate ASCII Artwork
+              run: cowsay -f cat "Meow! Welcome to GitHub Actions!" >> ascii_art_cat.txt
+            
+            - name: Test if file is created
+              run: grep -i "cat" ascii_art_cat.txt
+            
+            - name: Read file
+              run: cat ascii_art_cat.txt
+            
+            - name: List files in workspace
+              run: ls -ltra
