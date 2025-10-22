@@ -25,6 +25,8 @@ jobs:
             group: deploy-job
             # latest job will be prioritized, cancel any previous in-progress jobs
             # cancel-in-progress: true
+
+            # latest job will wait for any previous in-progress jobs to complete
             cancel-in-progress: false
         runs-on: ubuntu-latest
         steps:
