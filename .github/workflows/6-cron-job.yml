@@ -1,0 +1,15 @@
+name: Cron Job Workflow
+
+on:
+    schedule:
+        - cron: '*/2 * * * *' # Runs every 2 minutes
+
+jobs:
+    run-cron-job:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v5
+
+            - name: Run a script
+              run: echo "Running scheduled job..."
