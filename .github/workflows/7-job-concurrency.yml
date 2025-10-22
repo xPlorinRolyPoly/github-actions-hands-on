@@ -23,7 +23,9 @@ jobs:
         needs: docker
         concurrency:
             group: deploy-job
-            cancel-in-progress: true
+            # latest job will be prioritized, cancel any previous in-progress jobs
+            # cancel-in-progress: true
+            cancel-in-progress: false
         runs-on: ubuntu-latest
         steps:
             - name: Docker Run
