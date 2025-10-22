@@ -11,6 +11,8 @@ jobs:
             
             - name: List files in workspace
               run: ls -ltra
-              
+
             - name: Execute ASCII Generation Script
-              run: ./ascii-artwork.sh
+              run: |
+                chmod +x ascii-artwork.sh
+                ./ascii-artwork.sh
