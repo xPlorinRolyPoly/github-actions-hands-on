@@ -1,0 +1,19 @@
+name: Checkout Action Workflow
+
+on: push
+
+jobs:
+    checkout_job:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Print a message
+              run: echo "Hello, this is the checkout action workflow!"
+            
+            - name: Checkout repository
+              uses: actions/checkout@v5
+            
+            - name: List files
+              run: ls -la
+            
+            - name: Read file
+              run: cat README.md
