@@ -1,0 +1,21 @@
+name: Matrix Configuration Workflow
+
+# Documentation: https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs
+
+on:
+    push:
+    workflow_dispatch:
+
+jobs:
+    deploy:
+        strategy:
+            matrix:
+                os: [ubuntu-latest, ubuntu-22.04, windows-latest]
+                images: [hello-world, alpine]
+        runs-on: ${{ matrix.os }}
+        steps:
+            - name: Print Docker Details
+              run: docker info
+            
+            - name: Run Image on ${{ matrix.os }}
+              run: docker run ${{ matrix.images }}

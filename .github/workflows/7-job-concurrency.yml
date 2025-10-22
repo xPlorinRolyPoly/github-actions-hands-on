@@ -1,5 +1,7 @@
 name: Explore Job Concurrency
 
+# Documentation: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency
+
 on: workflow_dispatch
 
 env:
