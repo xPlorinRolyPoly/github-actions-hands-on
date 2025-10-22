@@ -2,14 +2,29 @@ name: Cron Job Workflow
 
 on:
     schedule:
-        - cron: '*/2 * * * *' # Runs every 2 minutes
+        # Run every 10 minutes (more reliable than every 2 minutes)
+        - cron: '*/10 * * * *'
+        # Alternative: Run every hour at minute 0
+        # - cron: '0 * * * *'
+    
+    # Allow manual triggering for testing
+    workflow_dispatch:
 
 jobs:
     run-cron-job:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v5
-
-            - name: Run a script
-              run: echo "Running scheduled job..."
+              uses: actions/checkout@v4
+              
+            - name: Display current time
+              run: |
+                echo "Current UTC time: $(date -u)"
+                echo "Workflow triggered by: ${{ github.event_name }}"
+                
+            - name: Run scheduled task
+              run: |
+                echo "Running scheduled job..."
+                echo "Repository: ${{ github.repository }}"
+                echo "Branch: ${{ github.ref }}"
+                echo "Commit SHA: ${{ github.sha }}"
