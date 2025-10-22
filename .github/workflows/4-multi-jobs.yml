@@ -1,0 +1,30 @@
+name: Multiple Jobs Workflow
+
+on: push
+
+jobs:
+  build-job:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Install Cowsay Package
+          run: sudo apt-get install -y cowsay
+            
+        - name: Generate ASCII Art with Cowsay
+          run: cowsay -f dragon "RAWR from Dragon! Welcome to GitHub Actions!" >> ascii_art_dragon.txt
+
+  test-job:
+    runs-on: ubuntu-latest
+    needs: build-job
+    steps:
+        - name: Test if ASCII Art File Exists
+          run: grep -i "dragon" ascii_art_dragon.txt
+
+  deploy-job:
+    runs-on: ubuntu-latest
+    needs: test-job
+    steps:
+      - name: Read ASCII Art File
+        run: cat ascii_art_dragon.txt
+        
+      - name: Deploy ASCII Art
+        run: echo "Deploying ASCII Art..."
