@@ -1,0 +1,79 @@
+name: Solar System Code Coverage
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+            - 'feature/*'
+        # paths:
+        #     - 'solar-system/**'
+
+env:
+    MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
+    MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+    MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+
+jobs:
+    unit-tests:
+        name: Run Unit Tests
+        strategy:
+            matrix:
+                node-version: [18, 19, 20]
+                os:
+                    - ubuntu-latest
+                    #- macos-latest
+                exclude:
+                    - node-version: 18
+                      os: macos-latest
+        runs-on: ${{ matrix.os }}
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js version ${{ matrix.node-version }}
+              uses: actions/setup-node@v5
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Install Dependencies
+              run: npm install
+              working-directory: ./solar-system
+
+            - name: Run Unit Tests
+              run: npm test
+              working-directory: ./solar-system
+            
+            - name: Archive Test Results
+              uses: actions/upload-artifact@v4
+              with:
+                  name: mocha-test-result-${{ matrix.os }}-node-${{ matrix.node-version }}
+                  path: ./solar-system/test-results.xml
+
+    code-coverage:
+        name: Code Coverage Report
+        runs-on: ubuntu-latest
+        needs: unit-tests
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js version 18
+              uses: actions/setup-node@v5
+              with:
+                  node-version: '18'
+
+            - name: Install Dependencies
+              run: npm install
+              working-directory: ./solar-system
+
+            - name: Check code coverage
+              run: npm run coverage
+              working-directory: ./solar-system
+            
+            - name: Archive Coverage Report
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-report
+                  path: ./solar-system/coverage
+                  retention-days: 5
