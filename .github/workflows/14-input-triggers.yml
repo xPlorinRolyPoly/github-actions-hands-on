@@ -44,7 +44,7 @@ jobs:
                   echo "Message: ${{ inputs.message }}"
             
             - name: Run Tests Based on Input
-              if: ${{ inputs.run-tests == 'true' }}
+              if: ${{ inputs.run-tests }}
               run: |
                   if [ "${{ inputs.test-type }}" == "unit" ]; then
                       echo "Running Unit Tests..."
