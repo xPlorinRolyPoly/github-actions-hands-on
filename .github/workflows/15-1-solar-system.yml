@@ -34,3 +34,9 @@ jobs:
             - name: Run Unit Tests
               run: npm test
               working-directory: ./solar-system
+            
+            - name: Archive Test Results
+              uses: actions/upload-artifact@v4
+              with:
+                  name: mocha-test-result
+                  path: ./solar-system/test-results.xml
