@@ -1,0 +1,32 @@
+name: Workflow Event Filters
+
+# Documentation: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onpushpull_requestbranchestags
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - 'main'
+            - '!feature/*' # Exclude all feature branches
+        # branches-ignore:
+        #     - 'feature/*' # feature/abc, feature/xyz
+        #     - 'test/**' # test/abc/def, test/xyz/123
+    pull_request:
+        types:
+            - opened
+            - reopened
+        paths-ignore:
+            - 'README.md'
+        branches:
+            - 'main'
+
+jobs:
+    event-filters:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Display Event Information
+              run: |
+                echo "Workflow triggered by event: ${{ github.event_name }}"
+                echo "Repository: ${{ github.repository }}"
+                echo "Branch: ${{ github.ref }}"
+                echo "Commit SHA: ${{ github.sha }}"
