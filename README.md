@@ -3,6 +3,9 @@
 This repository contains:
 - Example GitHub Actions Workflows
 
+## Skipping Workflow Runs
+Please refere [documentation](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs).
+
 ## Table of Example Workflows
 
 | Number | Workflow Example |
