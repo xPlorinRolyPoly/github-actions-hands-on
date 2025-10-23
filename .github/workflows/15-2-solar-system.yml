@@ -19,7 +19,7 @@ jobs:
         name: Run Unit Tests
         strategy:
             matrix:
-                node-version: [18, 19, 20]
+                node-version: [18, 20]
                 os:
                     - ubuntu-latest
                     #- macos-latest
@@ -41,10 +41,13 @@ jobs:
               working-directory: ./solar-system
 
             - name: Run Unit Tests
+              id: nodejs-unit-tests-step
               run: npm test
               working-directory: ./solar-system
             
             - name: Archive Test Results
+              if: always()
+              # if: failure() && steps.nodejs-unit-tests-step.outcome == 'failure' || steps.nodejs-unit-tests-step.outcome == 'success'
               uses: actions/upload-artifact@v4
               with:
                   name: mocha-test-result-${{ matrix.os }}-node-${{ matrix.node-version }}
