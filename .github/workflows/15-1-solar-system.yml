@@ -45,5 +45,5 @@ jobs:
             - name: Archive Test Results
               uses: actions/upload-artifact@v4
               with:
-                  name: mocha-test-result
+                  name: mocha-test-result-${{ matrix.os }}-node-${{ matrix.node-version }}
                   path: ./solar-system/test-results.xml
