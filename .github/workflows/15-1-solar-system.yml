@@ -6,8 +6,8 @@ on:
         branches:
             - main
             - 'feature/*'
-        paths:
-            - 'solar-system/**'
+        # paths:
+        #     - 'solar-system/**'
 
 jobs:
     unit-tests:
