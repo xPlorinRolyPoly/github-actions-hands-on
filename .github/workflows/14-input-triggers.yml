@@ -1,0 +1,58 @@
+name: Input Triggers
+
+# Documentation: https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch
+
+on:
+    workflow_dispatch:
+        inputs:
+            run-tests:
+                description: 'Run tests?'
+                required: true
+                type: boolean
+            test-type:
+                description: 'Type of tests to run'
+                required: true
+                type: choice
+                options:
+                    - unit
+                    - integration
+                    - all
+            environment:
+                description: 'Choose an environment'
+                required: true
+                type: environment
+            build-number:
+                description: 'Custom Build number'
+                required: false
+                type: number
+                default: 1
+            message:
+                description: 'Custom message'
+                required: false
+                type: string
+
+jobs:
+    input-triggers-job:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Print Workflow Inputs
+              run: |
+                  echo "Run Tests: ${{ inputs.run-tests }}"
+                  echo "Test Type: ${{ inputs.test-type }}"
+                  echo "Environment: ${{ inputs.environment }}"
+                  echo "Build Number: ${{ inputs.build-number }}"
+                  echo "Message: ${{ inputs.message }}"
+            
+            - name: Run Tests Based on Input
+              if: ${{ inputs.run-tests == 'true' }}
+              run: |
+                  if [ "${{ inputs.test-type }}" == "unit" ]; then
+                      echo "Running Unit Tests..."
+                      # Add commands to run unit tests here
+                  elif [ "${{ inputs.test-type }}" == "integration" ]; then
+                      echo "Running Integration Tests..."
+                      # Add commands to run integration tests here
+                  else
+                      echo "Running All Tests..."
+                      # Add commands to run all tests here
+                  fi
