@@ -1,0 +1,30 @@
+name: Enable debug log
+
+# Documentation: https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging
+
+on:
+    workflow_dispatch:
+    push:
+
+env:
+    USER_1: "foo-user"
+    USER_2: "bar-user"
+
+jobs:
+    debug-log:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+            
+            - name: Set USER_1 as USERNAME
+              run: echo "USERNAME=$USER_1" >> $GITHUB_ENV
+            
+            - name: Print USERNAME
+              run: |
+                echo "Print USERNAME"
+                echo "The USERNAME is $USERNAME"
+                exit 1
+            
+            - name: Print USER_2
+              run: echo "The USER_2 is $USER_2"
