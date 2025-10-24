@@ -144,7 +144,7 @@ jobs:
             wget -qO - 127.0.0.1:3000/live | grep "live"
           
         - name: Set REPO_OWNER
-          run: echo "REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
         - name: Push image to Containers Registries
           uses: docker/build-push-action@v6
@@ -153,4 +153,4 @@ jobs:
             push: true
             tags: |
               ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
-              ghcr.io/$REPO_OWNER/solar-system:${{ github.sha }}
+              ghcr.io/${{ env.REPO_OWNER }}/solar-system:${{ github.sha }}
