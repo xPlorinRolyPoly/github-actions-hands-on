@@ -101,6 +101,8 @@ jobs:
         - unit-tests
         - code-coverage
       runs-on: ubuntu-latest
+      permissions:
+        packages: write
       steps:
         - name: Checkout Repository
           uses: actions/checkout@v4
@@ -110,6 +112,13 @@ jobs:
           with:
             username: ${{ vars.DOCKER_HUB_USERNAME }}
             password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        
+        - name: Log in to GitHub Container Registry (GHCR)
+          uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: ${{ github.repository_owner }}
+            password: ${{ secrets.GITHUB_TOKEN }}
 
         - name: Build Docker Image
           uses: docker/build-push-action@v6
@@ -134,9 +143,11 @@ jobs:
             echo "Test image URL using wget"
             wget -qO - 127.0.0.1:3000/live | grep "live"
           
-        - name: Push Docker Image
+        - name: Push image to Containers Registries
           uses: docker/build-push-action@v6
           with:
             context: ./solar-system
             push: true
-            tags: ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
+            tags: |
+              ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
+              ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
