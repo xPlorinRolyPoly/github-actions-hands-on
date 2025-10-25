@@ -216,6 +216,7 @@ jobs:
             k8-config-file-paths: |
               solar-system/kubernetes/development/service.yaml
               solar-system/kubernetes/development/deployment.yaml
+              solar-system/kubernetes/development/ingress.yaml
             replacement-method: defined
           env:
             IMAGE: ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
