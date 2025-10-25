@@ -181,6 +181,7 @@ jobs:
         - name: Checkout Repository
           uses: actions/checkout@v4
 
+        # Action: https://github.com/marketplace/actions/configure-kubectl-for-oracle-container-engine-for-kubernetes-oke
         - name: Configure Kubectl for OKE
           uses: oracle-actions/configure-kubectl-oke@v1.5.0
           with:
@@ -191,3 +192,15 @@ jobs:
             kubectl version
             echo --------------------------------------------------
             kubectl get nodes
+        
+        - name: Deploy to Development Namespace
+          uses: swdotcom/update-and-apply-kubernetes-configs@v1
+          with:
+            k8-config-file-paths: |
+              solar-system/kubernetes/development/service.yaml
+              solar-system/kubernetes/development/deployment.yaml
+            replacement-method: defined
+          env:
+            NAMESPACE: dev
+            REPLICAS: 1
+            IMAGE: ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
