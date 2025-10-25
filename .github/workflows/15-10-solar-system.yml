@@ -201,9 +201,9 @@ jobs:
         - name: Create kubernetes secret for MongoDB credentials
           run: |
             kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
-              --from-literal=username=$MONGO_USERNAME \
-              --from-literal=password=$MONGO_PASSWORD \
-              --from-literal=uri=$MONGO_URI \
+              --from-literal=username=${{ vars.MONGO_USERNAME }} \
+              --from-literal=password=${{ secrets.MONGO_PASSWORD }} \
+              --from-literal=uri=${{ env.MONGO_URI }} \
               --dry-run=client -o yaml | kubectl apply -f -
         
         - name: Nginx ingress IP as Github Env Variable
