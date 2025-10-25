@@ -177,6 +177,8 @@ jobs:
       name: Deploy to Development Environment
       needs: docker
       runs-on: ubuntu-latest
+      outputs:
+        URL: ${{ steps.set-app-url.outputs.URL }}
       env:
         NAMESPACE: dev
         REPLICAS: 1
@@ -221,3 +223,23 @@ jobs:
           env:
             IMAGE: ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
             INGRESS_IP: ${{ env.INGRESS_IP }}
+
+        - name: Set Application URL
+          id: set-app-url
+          run: |
+            APP_INGRESS_HOST=$(kubectl -n ${{ env.NAMESPACE }} get ingress solar-system -o jsonpath="{.spec.rules[0].host}")
+            echo "Application URL: $APP_INGRESS_HOST"
+            echo "URL=$APP_INGRESS_HOST" >> $GITHUB_OUTPUT
+
+    integration-tests:
+      name: Dev Integration Tests
+      needs: dev-deploy
+      runs-on: ubuntu-latest
+      steps:
+        - name: Test URL using curl & jq
+          env:
+            URL: ${{ needs.dev-deploy.outputs.URL }}
+          run: |
+            echo $URL
+            echo --------------------------------------------------
+            curl -sSL "http://$URL/live" | jq -r .status | grep -i "live"
