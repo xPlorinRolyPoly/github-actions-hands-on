@@ -177,6 +177,9 @@ jobs:
       name: Deploy to Development Environment
       needs: docker
       runs-on: ubuntu-latest
+      env:
+        NAMESPACE: dev
+        REPLICAS: 1
       steps:
         - name: Checkout Repository
           uses: actions/checkout@v4
@@ -193,6 +196,14 @@ jobs:
             echo --------------------------------------------------
             kubectl get nodes
         
+        - name: Create kubernetes secret for MongoDB credentials
+          run: |
+            kubectl -n $NAMESPACE create secret generic mongo-db-creds \
+              --from-literal=username=$MONGO_USERNAME \
+              --from-literal=password=$MONGO_PASSWORD \
+              --from-literal=uri=$MONGO_URI \
+              --dry-run=client -o yaml | kubectl apply -f -
+        
         - name: Nginx ingress IP as Github Env Variable
           run: |
             INGRESS_IP=$(kubectl -n ingress-nginx get svc nginx-ingress-ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
@@ -207,7 +218,5 @@ jobs:
               solar-system/kubernetes/development/deployment.yaml
             replacement-method: defined
           env:
-            NAMESPACE: dev
-            REPLICAS: 1
             IMAGE: ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
             INGRESS_IP: ${{ env.INGRESS_IP }}
