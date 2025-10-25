@@ -1,0 +1,17 @@
+controller:
+  service:
+    annotations:
+      service.beta.kubernetes.io/oci-load-balancer-shape: flexible
+      service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
+      service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "100"
+      service.beta.kubernetes.io/oci-load-balancer-health-check-protocol: "HTTP"
+      service.beta.kubernetes.io/oci-load-balancer-health-check-port: "10254"
+      service.beta.kubernetes.io/oci-load-balancer-backend-protocol: "HTTP"
+      service.beta.kubernetes.io/oci-load-balancer-subnet-ids: "ocid1.subnet.oc1.eu-frankfurt-1.aaaaaaaaipuzgqypmmtvya3udj3cid2ibph2tyi3hik3z2ziubo2qs2q2apq"  # Replace with your public subnet OCID
+      service.beta.kubernetes.io/oci-load-balancer-ssl-ports: "443"
+    type: LoadBalancer  # For public OCI LB; use ClusterIP for internal
+  # Optional: Replicas for high availability
+  replicaCount: 1
+  # Enable admission webhook (recommended)
+  admissionWebhooks:
+    enabled: true
