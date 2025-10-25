@@ -13,6 +13,11 @@ env:
     MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
     MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
     MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+    OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+    OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+    OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+    OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+    OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
 
 jobs:
     unit-tests:
@@ -176,14 +181,10 @@ jobs:
         - name: Checkout Repository
           uses: actions/checkout@v4
 
-        - name: Install kubectl CLI
-          uses: azure/setup-kubectl@v4
-        
-        - name: Set Kube Config
-          uses: azure/k8s-set-context@v4
+        - name: Configure Kubectl for OKE
+          uses: oracle-actions/configure-kubectl-oke@v1.5.0
           with:
-            method: kubeconfig
-            kubeconfig: ${{ secrets.KUBE_CONFIG }}
+            cluster: ${{ secrets.OKE_CLUSTER_OCID }}
         
         - name: Fetch kubernetes details
           run: |
