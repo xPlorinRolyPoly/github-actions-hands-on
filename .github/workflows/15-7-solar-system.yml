@@ -1,0 +1,172 @@
+name: Solar System Coverage on Job Containers
+
+# Documentation for service container workflows
+# https://docs.github.com/en/actions/tutorials/use-containerized-services/use-docker-service-containers#creating-service-containers
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+            - 'feature/*'
+        # paths:
+        #     - 'solar-system/**'
+
+env:
+    MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
+    MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+    MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+
+jobs:
+    unit-tests:
+        name: Run Unit Tests
+        services:
+            mongo-db:
+              image: alpanachaphalkar/mongo-db:non-prod
+              ports:
+                - 27017:27017
+        env:
+            MONGO_URI: 'mongodb://localhost:27017/superData'
+            MONGO_USERNAME: ${{ vars.MONGO_NON_PROD_USERNAME }}
+            MONGO_PASSWORD: ${{ secrets.MONGO_NON_PROD_PASSWORD }}
+        strategy:
+            matrix:
+                node-version: [18, 20]
+                os:
+                    - ubuntu-latest
+                    #- macos-latest
+                exclude:
+                    - node-version: 18
+                      os: macos-latest
+        runs-on: ${{ matrix.os }}
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Set up Node.js version ${{ matrix.node-version }}
+              uses: actions/setup-node@v5
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - name: Cache dependencies
+              uses: actions/cache@v4
+              with:
+                path: ./solar-system/node_modules
+                key: ${{ runner.os }}-node-modules-${{ hashFiles('solar-system/package-lock.json') }}
+
+            - name: Install Dependencies
+              run: npm install
+              working-directory: ./solar-system
+
+            - name: Run Unit Tests
+              id: nodejs-unit-tests-step
+              run: npm test
+              working-directory: ./solar-system
+            
+            - name: Archive Test Results
+              if: always()
+              # if: failure() && steps.nodejs-unit-tests-step.outcome == 'failure' || steps.nodejs-unit-tests-step.outcome == 'success'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: mocha-test-result-${{ matrix.os }}-node-${{ matrix.node-version }}
+                  path: ./solar-system/test-results.xml
+
+    code-coverage:
+        name: Code Coverage Report
+        runs-on: ubuntu-latest
+        container:
+          image: node:18
+        services:
+            mongo-db:
+              image: alpanachaphalkar/mongo-db:non-prod
+              options: >-
+                --name mongo
+        env:
+            MONGO_URI: 'mongodb://mongo:27017/superData'
+            MONGO_USERNAME: ${{ vars.MONGO_NON_PROD_USERNAME }}
+            MONGO_PASSWORD: ${{ secrets.MONGO_NON_PROD_PASSWORD }}
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+            
+            - name: Cache dependencies
+              uses: actions/cache@v4
+              with:
+                path: ./solar-system/node_modules
+                key: ${{ runner.os }}-node-modules-${{ hashFiles('solar-system/package-lock.json') }}
+
+            - name: Install Dependencies
+              run: npm install
+              working-directory: ./solar-system
+
+            - name: Check code coverage
+              run: npm run coverage
+              continue-on-error: true
+              working-directory: ./solar-system
+            
+            - name: Archive Coverage Report
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-report
+                  path: ./solar-system/coverage
+                  retention-days: 5
+    
+    docker:
+      name: Containerize Application
+      needs:
+        - unit-tests
+        - code-coverage
+      runs-on: ubuntu-latest
+      permissions:
+        packages: write
+      steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+
+        - name: Log in to Docker Hub
+          uses: docker/login-action@v3
+          with:
+            username: ${{ vars.DOCKER_HUB_USERNAME }}
+            password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        
+        - name: Log in to GitHub Container Registry (GHCR)
+          uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: ${{ github.repository_owner }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Build Docker Image
+          uses: docker/build-push-action@v6
+          with:
+            context: ./solar-system
+            push: false
+            tags: ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
+        
+        - name: Test docker image
+          run: |
+            docker images
+            docker run --name solar-system-app -d \
+            -p 3000:3000 \
+            -e MONGO_URI=$MONGO_URI \
+            -e MONGO_USERNAME=$MONGO_USERNAME \
+            -e MONGO_PASSWORD=$MONGO_PASSWORD \
+            ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
+
+            export IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' solar-system-app)
+            echo "Container IP Address: $IP"
+
+            echo "Test image URL using wget"
+            wget -qO - 127.0.0.1:3000/live | grep "live"
+          
+        - name: Set REPO_OWNER
+          run: echo "REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+        - name: Push image to Containers Registries
+          uses: docker/build-push-action@v6
+          with:
+            context: ./solar-system
+            push: true
+            tags: |
+              ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
+              ghcr.io/${{ env.REPO_OWNER }}/solar-system:${{ github.sha }}
