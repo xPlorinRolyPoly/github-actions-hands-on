@@ -129,9 +129,7 @@ jobs:
         - name: Upload Reports to OCI Bucket
           uses: oracle-actions/run-oci-cli-command@v1.3.2
           with:
-            command: |
-              os object put --bucket-name bucket_name --file file_location ${{ github.workspace }}/reports/test-results.xml --name test-results.xml
-              os object put --bucket-name bucket_name --file file_location ${{ github.workspace }}/reports/coverage --name coverage
+            command: os object put --bucket-name bucket_name --file file_location ${{ github.workspace }}/reports/test-results.xml --name test-results.xml
     
     docker:
       name: Containerize Application
