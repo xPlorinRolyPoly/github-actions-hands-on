@@ -125,11 +125,11 @@ jobs:
           uses: actions/download-artifact@v4
           with:
             path: ${{ github.workspace }}/reports
-        
-        - name: Upload Reports to OCI Bucket
+
+        - name: Upload Unit Test Results to OCI Bucket
           uses: oracle-actions/run-oci-cli-command@v1.3.2
           with:
-            command: os object put --bucket-name bucket_name --file file_location ${{ github.workspace }}/reports/test-results.xml --name test-results.xml
+            command: os object put --bucket-name github-actions-reports --file ${{ github.workspace }}/reports/test-results.xml --name test-results.xml
     
     docker:
       name: Containerize Application
