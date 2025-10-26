@@ -114,7 +114,7 @@ jobs:
                   retention-days: 5
     
     upload-reports:
-      name: OCI Bucket - Upload Reports
+      name: S3 Bucket - Upload Reports
       needs:
         - unit-tests
         - code-coverage
