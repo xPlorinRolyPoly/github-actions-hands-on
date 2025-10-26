@@ -25,3 +25,4 @@ out/
 *.old
 *.orig
 oke.yaml
+*.csv
