@@ -278,7 +278,6 @@ jobs:
           env:
             SLACK_CHANNEL: github-actions
             SLACK_COLOR: ${{ job.status }}
-            SLACK_ICON: https://github.com/rtCamp.png?size=48
             SLACK_MESSAGE: 'Triggered by ${{ github.actor }}: GitHub Workflow Run URL - ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
             SLACK_TITLE: 'Solar System CI/CD Pipeline - ${{ github.ref_name }}'
             SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
