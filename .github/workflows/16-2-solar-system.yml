@@ -124,7 +124,7 @@ jobs:
         - name: Download Unit Test Results
           uses: actions/download-artifact@v4
           with:
-            artifact-ids: coverage-report, mocha-test-result-ubuntu-latest-node-18, mocha-test-result-ubuntu-latest-node-20
+            name: coverage-report, mocha-test-result-ubuntu-latest-node-18, mocha-test-result-ubuntu-latest-node-20
             path: ${{ github.workspace }}/reports
         
         - name: Upload Reports to OCI Bucket
