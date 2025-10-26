@@ -1,0 +1,106 @@
+name: Reusable workflow for Deployment
+
+# Documentation: 
+# https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows
+# https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations#limitations-of-reusable-workflows
+
+on:
+    workflow_call:
+        secrets:
+          oci-cli-user:
+            required: true
+          oci-cli-tenancy:
+            required: true
+          oci-cli-fingerprint:
+            required: true
+          oci-cli-key-content:
+            required: true
+          oci-cli-region:
+            required: true
+          oke-cluster-ocid:
+            required: true
+          mongo-db-password:
+            required: true
+        inputs:
+          mongo-db-uri:
+            required: true
+            type: string
+          k8s-manifest-dir:
+            description: 'Directory containing Kubernetes manifest files'
+            required: true
+            type: string
+            default: solar-system/kubernetes
+          environment:
+            description: 'Deployment environment name'
+            required: true
+            type: string
+            default: development
+        outputs:
+          application-ingress-host:
+            description: 'The Ingress host URL of the deployed application'
+            value: ${{ jobs.deploy.outputs.APP_INGRESS_HOST }}
+
+jobs:
+  deploy:
+      runs-on: ubuntu-latest
+      env:
+        OCI_CLI_USER: ${{ secrets.oci-cli-user }}
+        OCI_CLI_TENANCY: ${{ secrets.oci-cli-tenancy }}
+        OCI_CLI_FINGERPRINT: ${{ secrets.oci-cli-fingerprint }}
+        OCI_CLI_KEY_CONTENT: ${{ secrets.oci-cli-key-content }}
+        OCI_CLI_REGION: ${{ secrets.oci-cli-region }}
+      environment:
+        name: ${{ inputs.environment }}
+        url: http://${{ steps.set-app-url.outputs.APP_INGRESS_HOST }}
+      outputs:
+        APP_INGRESS_HOST: ${{ steps.set-app-url.outputs.APP_INGRESS_HOST }}
+      steps:
+        - name: Checkout Repository
+          uses: actions/checkout@v4
+
+        # Action: https://github.com/marketplace/actions/configure-kubectl-for-oracle-container-engine-for-kubernetes-oke
+        - name: Configure Kubectl for OKE
+          uses: oracle-actions/configure-kubectl-oke@v1.5.0
+          with:
+            cluster: ${{ secrets.oke-cluster-ocid }}
+        
+        - name: Fetch kubernetes details
+          run: |
+            kubectl version
+            echo --------------------------------------------------
+            kubectl get nodes
+        
+        - name: Create kubernetes secret for MongoDB credentials
+          run: |
+            kubectl -n ${{ vars.NAMESPACE }} create secret generic mongo-db-creds \
+              --from-literal=username=${{ vars.MONGO_USERNAME }} \
+              --from-literal=password=${{ secrets.mongo-db-password }} \
+              --from-literal=uri=${{ inputs.mongo-db-uri }} \
+              --dry-run=client -o yaml | kubectl apply -f -
+        
+        - name: Nginx ingress IP as Github Env Variable
+          run: |
+            INGRESS_IP=$(kubectl -n ingress-nginx get svc nginx-ingress-ingress-nginx-controller -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+            echo "INGRESS_IP=$INGRESS_IP"
+            echo "INGRESS_IP=$INGRESS_IP" >> $GITHUB_ENV
+        
+        - name: Deploy to Development Namespace
+          uses: swdotcom/update-and-apply-kubernetes-configs@v1
+          with:
+            k8-config-file-paths: |
+              ${{ inputs.k8s-manifest-dir }}/${{ inputs.environment }}/service.yaml
+              ${{ inputs.k8s-manifest-dir }}/${{ inputs.environment }}/deployment.yaml
+              ${{ inputs.k8s-manifest-dir }}/${{ inputs.environment }}/ingress.yaml
+            replacement-method: defined
+          env:
+            IMAGE: ${{ vars.DOCKER_HUB_USERNAME }}/solar-system:${{ github.sha }}
+            INGRESS_IP: ${{ env.INGRESS_IP }}
+            NAMESPACE: ${{ vars.NAMESPACE }}
+            REPLICAS: ${{ vars.REPLICAS }}
+
+        - name: Set Application URL
+          id: set-app-url
+          run: |
+            APP_INGRESS_HOST=$(kubectl -n ${{ vars.NAMESPACE }} get ingress solar-system -o jsonpath="{.spec.rules[0].host}")
+            echo "Application URL: $APP_INGRESS_HOST"
+            echo "APP_INGRESS_HOST=$APP_INGRESS_HOST" >> $GITHUB_OUTPUT
